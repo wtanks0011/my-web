@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d1d">
+  <title>Continue Your Journey</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: dark; }
+    body {
+      min-height: 100vh; margin: 0; padding: 26px;
+      display: grid; place-items: center; overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #f7f8ff;
+      background:
+        radial-gradient(ellipse at 18% 18%, rgba(74, 116, 255, .32), transparent 34%),
+        radial-gradient(ellipse at 82% 22%, rgba(35, 220, 199, .20), transparent 32%),
+        radial-gradient(ellipse at 50% 100%, rgba(151, 91, 255, .26), transparent 42%),
+        linear-gradient(135deg, #080d1d 0%, #111b38 48%, #090e20 100%);
+    }
+    .scene { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+    .orb {
+      position: absolute; width: min(42vw, 520px); aspect-ratio: 1;
+      border-radius: 50%; filter: blur(75px); opacity: .26;
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+    .orb.one { left: -12%; top: -20%; background: #547bff; }
+    .orb.two { right: -12%; bottom: -24%; background: #19d8c5; animation-delay: -7s; }
+    .orb.three { width: 300px; right: 20%; top: 35%; background: #9c68ff; opacity: .16; animation-delay: -4s; }
+    .stars {
+      position: absolute; inset: 0; opacity: .55;
+      background-image:
+        radial-gradient(1.5px 1.5px at 12% 22%, #fff 45%, transparent 60%),
+        radial-gradient(1px 1px at 28% 76%, #b9d5ff 45%, transparent 60%),
+        radial-gradient(2px 2px at 78% 18%, #fff 45%, transparent 60%),
+        radial-gradient(1px 1px at 88% 68%, #c9fff7 45%, transparent 60%),
+        radial-gradient(1.5px 1.5px at 62% 88%, #fff 45%, transparent 60%),
+        radial-gradient(1px 1px at 48% 12%, #fff 45%, transparent 60%);
+      background-size: 420px 360px;
+    }
+    .horizon {
+      position: absolute; left: -20%; right: -20%; bottom: -45%;
+      height: 70%; border-radius: 50%;
+      border: 1px solid rgba(166, 196, 255, .13);
+      box-shadow: 0 -20px 100px rgba(89, 130, 255, .10), inset 0 25px 80px rgba(55, 195, 210, .05);
+      transform: perspective(500px) rotateX(58deg);
+    }
+    .wrap { width: min(100%, 620px); position: relative; z-index: 1; }
+    .panel {
+      position: relative; text-align: center;
+      padding: clamp(34px, 7vw, 62px) clamp(22px, 7vw, 58px);
+      border-radius: 32px;
+      border: 1px solid rgba(220, 232, 255, .19);
+      background: linear-gradient(145deg, rgba(255,255,255,.115), rgba(255,255,255,.045));
+      box-shadow: 0 30px 100px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.14);
+      -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+    }
+    .panel::before {
+      content: ""; position: absolute; inset: 1px; border-radius: 31px;
+      background: linear-gradient(135deg, rgba(255,255,255,.09), transparent 35%, transparent 70%, rgba(105,235,224,.06));
+      pointer-events: none;
+    }
+    .mark {
+      width: 82px; height: 82px; margin: 0 auto 26px; position: relative;
+      display: grid; place-items: center; border-radius: 26px;
+      background: linear-gradient(145deg, #8ceee2, #7898ff 58%, #b28aff);
+      box-shadow: 0 12px 42px rgba(108, 144, 255, .36), inset 0 1px 1px rgba(255,255,255,.65);
+    }
+    .mark::after {
+      content: ""; position: absolute; inset: -7px; border-radius: 32px;
+      border: 1px solid rgba(180, 213, 255, .22);
+    }
+    .mark svg { width: 37px; height: 37px; stroke: #10182d; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 8px 13px; border: 1px solid rgba(198, 220, 255, .17);
+      border-radius: 99px; background: rgba(255,255,255,.055);
+      color: #c5d5ff; font-size: .7rem; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase;
+    }
+    .tag i { width: 6px; height: 6px; border-radius: 50%; background: #75f0d9; box-shadow: 0 0 12px #75f0d9; }
+    h1 {
+      margin: 22px 0 12px; font-size: clamp(2.25rem, 7vw, 3.7rem);
+      line-height: 1.05; letter-spacing: -.055em; font-weight: 800;
+      background: linear-gradient(100deg, #fff 10%, #cbdcff 52%, #a9f5e8 95%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .desc {
+      max-width: 400px; margin: 0 auto 34px; color: #bac6df;
+      font-size: 1rem; line-height: 1.75;
+    }
+    .continue {
+      position: relative; isolation: isolate; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      width: 100%; min-height: 70px; padding: 18px 22px;
+      border-radius: 19px; text-decoration: none; color: #10172b;
+      font-size: .98rem; font-weight: 900; letter-spacing: .075em;
+      background: linear-gradient(105deg, #a4f4e7 0%, #a9c5ff 52%, #d0b0ff 100%);
+      box-shadow: 0 14px 38px rgba(120, 160, 255, .28), inset 0 1px 0 rgba(255,255,255,.85);
+      transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .continue::before {
+      content: ""; position: absolute; z-index: -1; top: -80%; left: -35%;
+      width: 25%; height: 260%; transform: rotate(25deg);
+      background: rgba(255,255,255,.55); filter: blur(9px);
+      animation: shine 4.5s ease-in-out infinite;
+    }
+    .continue:hover {
+      transform: translateY(-4px) scale(1.012); filter: brightness(1.07);
+      box-shadow: 0 20px 48px rgba(120, 160, 255, .42);
+      animation: none;
+    }
+    .continue:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
+    .continue svg { width: 22px; height: 22px; transition: transform .2s ease; }
+    .continue:hover svg { transform: translateX(5px); }
+    .note { margin: 24px 0 0; color: #8594b4; font-size: .78rem; letter-spacing: .025em; }
+    .note span { color: #a9f1e4; }
+    .transition-screen {
+      position: fixed; inset: 0; z-index: 10; display: grid; place-items: center;
+      padding: 24px; opacity: 0; visibility: hidden;
+      background:
+        radial-gradient(circle at 50% 45%, rgba(104,150,255,.34), transparent 34%),
+        linear-gradient(135deg, #080d1d, #17264b 55%, #090e20);
+      transition: opacity .55s ease, visibility .55s ease;
+    }
+    .transition-screen.active { opacity: 1; visibility: visible; }
+    .transition-content { text-align: center; transform: translateY(18px) scale(.96); transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .transition-screen.active .transition-content { transform: translateY(0) scale(1); }
+    .loader {
+      width: 76px; height: 76px; margin: 0 auto 25px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.15); border-top-color: #a4f4e7;
+      border-right-color: #a9c5ff; animation: spin .8s linear infinite;
+      box-shadow: 0 0 35px rgba(135,175,255,.24);
+    }
+    .transition-content h2 { margin: 0 0 10px; font-size: clamp(1.8rem, 6vw, 2.7rem); letter-spacing: -.04em; }
+    .transition-content p { color: #bac6df; margin: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes drift { to { transform: translate(9vw, 8vh) scale(1.12); } }
+    @keyframes breathe {
+      0%,100% { box-shadow: 0 14px 38px rgba(120,160,255,.24), inset 0 1px 0 rgba(255,255,255,.85); }
+      50% { box-shadow: 0 17px 48px rgba(120,160,255,.42), inset 0 1px 0 rgba(255,255,255,.9); }
+    }
+    @keyframes shine {
+      0%, 18% { left: -35%; opacity: 0; }
+      35% { opacity: .8; }
+      58%, 100% { left: 130%; opacity: 0; }
+    }
+    @media (max-width: 480px) {
+      body { padding: 17px; }
+      .panel { border-radius: 26px; }
+      .continue { font-size: .86rem; min-height: 64px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="orb one"></div><div class="orb two"></div><div class="orb three"></div>
+    <div class="stars"></div><div class="horizon"></div>
+  </div>
+  <main class="wrap">
+    <section class="panel">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3h7v7M10 14 21 3"/>
+          <path d="M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/>
+        </svg>
+      </div>
+      <div class="tag"><i></i> Your next destination</div>
+      <h1>Ready to continue?</h1>
+      <p class="desc">A new experience is just one click away. Tap below and let the journey begin.</p>
+      <a class="continue" id="continueButton" href="https://live-ecoree.pantheonsite.io/">
+        CLICK HERE TO CONTINUE
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <p class="note"><span>✦</span> Opens your destination in a new tab</p>
+    </section>
+  </main>
+  <div class="transition-screen" id="transitionScreen" aria-hidden="true">
+    <div class="transition-content">
+      <div class="loader" aria-hidden="true"></div>
+      <h2>Taking you there...</h2>
+      <p>Preparing your experience</p>
+    </div>
+  </div>
+  <script>
+    const continueButton = document.getElementById("continueButton");
+    const transitionScreen = document.getElementById("transitionScreen");
+
+    continueButton.addEventListener("click", function (event) {
+      // Keep normal link behavior for modified clicks or non-primary clicks.
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      transitionScreen.classList.add("active");
+      transitionScreen.setAttribute("aria-hidden", "false");
+      window.setTimeout(function () {
+        window.location.href = continueButton.href;
+      }, 1100);
+    });
+  </script>
+</body>
+</html>
