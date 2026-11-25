@@ -264,6 +264,13 @@
         window.location.href = destination;
       }, 1100);
     });
+
+    // Restore the page if the visitor returns with the browser Back button.
+    window.addEventListener("pageshow", function () {
+      transitionScreen.classList.remove("active");
+      transitionScreen.setAttribute("aria-hidden", "true");
+      transitioning = false;
+    });
   </script>
 </body>
 </html>
