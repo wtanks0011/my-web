@@ -115,8 +115,36 @@
     .continue:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
     .continue svg { width: 22px; height: 22px; transition: transform .2s ease; }
     .continue:hover svg { transform: translateX(5px); }
-    .note { margin: 24px 0 0; color: #8594b4; font-size: .78rem; letter-spacing: .025em; }
-    .note span { color: #a9f1e4; }
+    .captcha-box {
+      width: min(100%, 360px); min-height: 82px; margin: 0 auto;
+      padding: 16px 18px; display: flex; align-items: center; gap: 15px;
+      text-align: left; border: 1px solid rgba(220,232,255,.22);
+      border-radius: 12px; background: rgba(255,255,255,.075);
+      box-shadow: 0 8px 26px rgba(0,0,0,.16); cursor: pointer;
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+      color: #f7f8ff; font: inherit;
+    }
+    .captcha-box:hover { border-color: rgba(164,244,231,.65); background: rgba(255,255,255,.11); }
+    .captcha-box:focus-visible { outline: 3px solid #a4f4e7; outline-offset: 4px; }
+    .captcha-square {
+      width: 27px; height: 27px; flex: 0 0 27px; display: grid; place-items: center;
+      border: 2px solid #aebbd1; border-radius: 4px; background: rgba(8,13,29,.45);
+    }
+    .captcha-square svg { width: 19px; height: 19px; opacity: 0; transform: scale(.6); transition: .2s ease; }
+    .captcha-box.checked .captcha-square { border-color: #75f0d9; background: #75f0d9; }
+    .captcha-box.checked .captcha-square svg { opacity: 1; transform: scale(1); stroke: #10182d; }
+    .captcha-label { font-size: 1rem; font-weight: 600; }
+    .captcha-brand { margin-left: auto; display: grid; justify-items: center; gap: 4px; color: #bac6df; }
+    .captcha-brand svg { width: 27px; height: 27px; }
+    .captcha-brand small { font-size: .58rem; letter-spacing: .04em; }
+    .captcha-status { min-height: 24px; margin: 16px 0 0; color: #a9f1e4; font-size: .86rem; }
+    .captcha-status .mini-spin {
+      display: inline-block; width: 14px; height: 14px; margin-right: 8px;
+      vertical-align: -2px; border: 2px solid rgba(169,241,228,.25);
+      border-top-color: #a9f1e4; border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    .continue[hidden] { display: none; }
+    .continue { margin-top: 18px; border: 0; cursor: pointer; }
     .transition-screen {
       position: fixed; inset: 0; z-index: 10; display: grid; place-items: center;
       padding: 24px; opacity: 0; visibility: hidden;
@@ -173,13 +201,21 @@
       <div class="tag"><i></i> Your next destination</div>
       <h1>Ready to continue?</h1>
       <p class="desc">A new experience is just one click away. Tap below and let the journey begin.</p>
-      <a class="continue" id="continueButton" href="https://live-ecoree.pantheonsite.io/">
-        CLICK HERE TO CONTINUE
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M13 5l7 7-7 7"/>
-        </svg>
-      </a>
-      <p class="note"><span>✦</span> Opens your destination in a new tab</p>
+      <button class="captcha-box" id="captchaButton" type="button" aria-label="I'm not a robot — continue">
+        <span class="captcha-square" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>
+        </span>
+        <span class="captcha-label">I'm not a robot</span>
+        <span class="captcha-brand" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 3 28 25H4L16 3Z" stroke="currentColor" stroke-width="2"/><path d="M16 11v7m0 3v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <small>QUICK CHECK</small>
+        </span>
+      </button>
+      <p class="captcha-status" id="captchaStatus" aria-live="polite"></p>
+      <button class="continue" id="continueButton" type="button" hidden>
+        CONTINUE
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
     </section>
   </main>
   <div class="transition-screen" id="transitionScreen" aria-hidden="true">
@@ -190,17 +226,42 @@
     </div>
   </div>
   <script>
-    const continueButton = document.getElementById("continueButton");
+    const captchaButton = document.getElementById("captchaButton");
+    const captchaStatus = document.getElementById("captchaStatus");
     const transitionScreen = document.getElementById("transitionScreen");
+    const continueButton = document.getElementById("continueButton");
+    const destination = "https://live-ecoree.pantheonsite.io/";
+    let checking = false;
+    let transitioning = false;
 
-    continueButton.addEventListener("click", function (event) {
-      // Keep normal link behavior for modified clicks or non-primary clicks.
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
+    captchaButton.addEventListener("click", function () {
+      if (checking || transitioning) return;
+      checking = true;
+      captchaButton.disabled = true;
+      captchaButton.style.cursor = "default";
+      let seconds = 3;
+      captchaStatus.innerHTML = '<span class="mini-spin" aria-hidden="true"></span>Checking... ' + seconds;
+      const countdown = window.setInterval(function () {
+        seconds -= 1;
+        if (seconds > 0) {
+          captchaStatus.innerHTML = '<span class="mini-spin" aria-hidden="true"></span>Checking... ' + seconds;
+          return;
+        }
+        window.clearInterval(countdown);
+        captchaButton.classList.add("checked");
+        captchaStatus.textContent = "Ready to continue.";
+        continueButton.hidden = false;
+        continueButton.focus();
+      }, 1000);
+    });
+
+    continueButton.addEventListener("click", function () {
+      if (transitioning) return;
+      transitioning = true;
       transitionScreen.classList.add("active");
       transitionScreen.setAttribute("aria-hidden", "false");
       window.setTimeout(function () {
-        window.location.href = continueButton.href;
+        window.location.href = destination;
       }, 1100);
     });
   </script>
